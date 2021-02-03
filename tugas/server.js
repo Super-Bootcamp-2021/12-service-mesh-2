@@ -1,7 +1,7 @@
 const { createServer } = require('http')
 const url = require('url')
 const { stdout } = require('process')
-const {saveWorker,getWorker} = require('./worker-service');
+const {saveWorker,getWorker,photoService} = require('./worker-service');
 
 //Worker service module here
 
@@ -43,7 +43,7 @@ const server = createServer((req, res) => {
             break
         case /^\/photo\/\w+/.test(uri.pathname):
             if (method === 'GET') {
-                // get photo data
+                photoService(req,res)
             } else {
                 message = 'Method tidak tersedia'
                 respond()
