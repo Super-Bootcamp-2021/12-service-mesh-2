@@ -41,8 +41,9 @@ function addWorkers(req, res) {
           const destname = randomFileName(mimetype);
           profil = destname;
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `./db/profil/${destname}`)
+            path.resolve(__dirname, `../../db/profil/${destname}`)
           );
+          profile = destname;
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
@@ -87,7 +88,7 @@ function addWorkers(req, res) {
       telp: telp,
       biografi: biografi,
     });
-    await save(CONFIG.WORKER, JSON.stringify({ worker: [input] }));
+    await save(CONFIG.WORKER, input);
     res.end();
   });
 
@@ -144,5 +145,5 @@ function uploadFoto(req, res) {
 
 module.exports = {
   addWorkers,
-  uploadFoto
+  uploadFoto,
 };

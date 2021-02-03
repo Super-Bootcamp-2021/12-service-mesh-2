@@ -12,7 +12,7 @@ function connect() {
 }
 
 async function save(db, data) {
-  client.set(db, JSON.stringify(data));
+  client.rpush(db, data);
 }
 
 async function del(db, data) {

@@ -35,7 +35,7 @@ function addTask(req, res) {
   busboy.on('finish', async () => {
     const input = JSON.stringify({
       job: job,
-      worker: worker
+      worker: worker,
     });
     await save(CONFIG.TASK, JSON.stringify({ task: [input] }));
     res.end();

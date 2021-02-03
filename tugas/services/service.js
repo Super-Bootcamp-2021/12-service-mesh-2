@@ -1,8 +1,12 @@
 const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
+<<<<<<< HEAD
+const {  addWorkers, readWorkers } = require('../lib/worker/main');
+=======
 const { addWorkers,uploadFoto } = require('../lib/worker/create-worker');
 const { addTask } = require('../lib/task/create-task');
+>>>>>>> ded788e141db665e0d92bac50cc64de3a3f6bd2a
 
 const server = createServer((req, res) => {
   let method = req.method;
@@ -31,6 +35,14 @@ const server = createServer((req, res) => {
         respond();
       }
       break;
+    case uri.pathname == '/read-worker' :
+      if (method === 'GET') {
+        readWorkers(req, res);
+      }
+      else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
     case uri.pathname === '/upload-photo':
         if (method === 'POST') {
           uploadFoto(req, res);
