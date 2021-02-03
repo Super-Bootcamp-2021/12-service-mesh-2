@@ -30,7 +30,7 @@ function uploadService(req, res) {
     switch (fieldname) {
       case 'photo':
         {
-          const obj = {}
+          const obj = {};
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
             path.resolve(__dirname, `./file-storage/${destname}`)
@@ -38,10 +38,12 @@ function uploadService(req, res) {
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
+          obj.photo = destname;
         }
         break;
       case 'attach':
         {
+          const obj = {};
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
             path.resolve(__dirname, `./file-storage/${destname}`)
@@ -49,6 +51,7 @@ function uploadService(req, res) {
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
+          obj.attach = destname;
         }
         break;
       default: {
