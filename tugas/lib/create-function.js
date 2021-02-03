@@ -136,7 +136,7 @@ function addWorkers(req, res) {
                 biografi = val;
                 break;
         }
-      console.log(val);
+      // console.log(val);
     });
     busboy.on('finish', () => {
         const input = JSON.stringify({
