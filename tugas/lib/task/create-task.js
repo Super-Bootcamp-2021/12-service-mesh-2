@@ -16,7 +16,7 @@ function randomFileName(mimetype) {
   );
 }
 
-function addWorkers(req, res) {
+function addTask(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
   let profil = '';

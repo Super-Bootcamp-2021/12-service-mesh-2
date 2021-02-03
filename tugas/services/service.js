@@ -1,7 +1,7 @@
 const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
-const {  addWorkers } = require('../lib/worker/create-worker');
+const {  addWorkers, readWorkers } = require('../lib/worker/main');
 
 const server = createServer((req, res) => {
   let method = req.method;
@@ -30,6 +30,15 @@ const server = createServer((req, res) => {
         respond();
       }
       break;
+    case uri.pathname == '/read-worker' :
+      if (method === 'GET') {
+        readWorkers(req, res);
+      }
+      else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+
     default:
       statusCode = 404;
       respond();
