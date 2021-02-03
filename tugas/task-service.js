@@ -36,6 +36,32 @@ function saveTask(req, res) {
         data[fieldname] = val
     })
 
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        switch (fieldname) {
+          case 'attachment':
+            {
+              const destname = randomFileName(mimetype);
+              const store = fs.createWriteStream(
+                path.resolve(__dirname, `./storage/attachment/${destname}`)
+              );
+              file.on('error', abort);
+              store.on('error', abort);
+              file.pipe(store);
+              data["attachment"] = "localhost:9999/attachment/" + destname;
+            }
+            break;
+          default: {
+            const noop = new Writable({
+              write(chunk, encding, callback) {
+                setImmediate(callback);
+              },
+            });
+            file.pipe(noop);
+          }
+        }
+      });
+    
+
     busboy.on('finish', () => {
 
         client.on('error', (error) => {
@@ -76,6 +102,5 @@ async function getTask(req, res) {
     res.end();
     req.on('aborted', abort);
 }
-
 
 module.exports = { saveTask, getTask };
