@@ -30,6 +30,18 @@ function uploadService(req, res) {
     switch (fieldname) {
       case 'photo':
         {
+          const obj = {}
+          const destname = randomFileName(mimetype);
+          const store = fs.createWriteStream(
+            path.resolve(__dirname, `./file-storage/${destname}`)
+          );
+          file.on('error', abort);
+          store.on('error', abort);
+          file.pipe(store);
+        }
+        break;
+      case 'attach':
+        {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
             path.resolve(__dirname, `./file-storage/${destname}`)
