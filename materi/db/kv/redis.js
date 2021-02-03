@@ -24,6 +24,5 @@ async function main() {
     client.end(true);
   } catch (err) {
     console.error(err);
-    res.end()
   }
 }

@@ -33,7 +33,7 @@ function uploadFiles(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `../file-storage/photos/${destname}`)
+            path.resolve(__dirname, `./data/photos/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
@@ -44,7 +44,7 @@ function uploadFiles(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `../file-storage/task-files/${destname}`)
+            path.resolve(__dirname, `./data/task-files/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
@@ -53,7 +53,7 @@ function uploadFiles(req, res) {
         break;
       default: {
         const noop = new Writable({
-          write(chunk, encding, callback) {
+          write(chunk, encoding, callback) {
             setImmediate(callback);
           },
         });
