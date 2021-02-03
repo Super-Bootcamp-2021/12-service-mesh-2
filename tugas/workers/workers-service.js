@@ -12,9 +12,6 @@ const {
 } = require('util');
 
 const client = redis.createClient();
-const getAsync = promisify(client.get).bind(client);
-const setAsync = promisify(client.set).bind(client);
-
 
 function randomFileName(mimetype) {
   return (
