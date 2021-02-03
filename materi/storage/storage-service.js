@@ -15,6 +15,10 @@ function randomFileName(mimetype) {
   );
 }
 
+function saveFile(){
+  
+}
+
 function uploadService(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
@@ -49,11 +53,12 @@ function uploadService(req, res) {
       }
     }
   });
-
+  let data = {};
   busboy.on('field', (fieldname, val) => {
-    console.log(val);
+    data[fieldname] = val;
   });
   busboy.on('finish', () => {
+    res.write(JSON.stringify(data));
     res.end();
   });
 
