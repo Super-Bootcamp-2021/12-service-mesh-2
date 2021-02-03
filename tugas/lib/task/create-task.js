@@ -6,25 +6,11 @@ const { Writable } = require('stream');
 const { save } = require('../../db/redis/redis');
 const { CONFIG } = require('../../config');
 
-function randomFileName(mimetype) {
-  return (
-    new Date().getTime() +
-    '-' +
-    Math.round(Math.random() * 1000) +
-    '.' +
-    mime.extension(mimetype)
-  );
-}
-
 function addTask(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
-  let profil = '';
-  let nama = '';
-  let alamat = '';
-  let email = '';
-  let telp = '';
-  let biografi = '';
+  let job = '';
+  let worker = '';
 
   function abort() {
     req.unpipe(busboy);
@@ -34,60 +20,24 @@ function addTask(req, res) {
     }
   }
 
-  busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-    switch (fieldname) {
-      case 'profil':
-        {
-          const destname = randomFileName(mimetype);
-          profil = destname;
-          const store = fs.createWriteStream(
-            path.resolve(__dirname, `./db/profil/${destname}`)
-          );
-          file.on('error', abort);
-          store.on('error', abort);
-          file.pipe(store);
-        }
-        break;
-      default: {
-        const noop = new Writable({
-          write(chunk, encding, callback) {
-            setImmediate(callback);
-          },
-        });
-        file.pipe(noop);
-      }
-    }
-  });
-
   busboy.on('field', (fieldname, val) => {
     switch (fieldname) {
-      case 'nama':
-        nama = val;
+      case 'job':
+        job = val;
         break;
-      case 'alamat':
-        alamat = val;
+      case 'worker':
+        worker = val;
         break;
-      case 'email':
-        email = val;
-        break;
-      case 'telp':
-        telp = val;
-        break;
-      case 'biografi':
-        biografi = val;
+      default:
         break;
     }
   });
   busboy.on('finish', async () => {
     const input = JSON.stringify({
-      profil: profil,
-      nama: nama,
-      alamat: alamat,
-      email: email,
-      telp: telp,
-      biografi: biografi,
+      job: job,
+      worker: worker,
     });
-    await save(CONFIG.WORKER, input);
+    await save(CONFIG.TASK, input);
     res.end();
   });
 
@@ -98,5 +48,5 @@ function addTask(req, res) {
 }
 
 module.exports = {
-  addWorkers,
+  addTask,
 };

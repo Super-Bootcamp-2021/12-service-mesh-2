@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const url = require('url');
-const {read} = require('../../db/redis/redis')
+const { read } = require('../../db/redis/redis');
 
 function readWorkers(req, res) {
   const uri = url.parse(req.url, true);

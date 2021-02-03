@@ -43,7 +43,7 @@ function addWorkers(req, res) {
           const store = fs.createWriteStream(
             path.resolve(__dirname, `../../db/profil/${destname}`)
           );
-          profile = destname
+          profile = destname;
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
@@ -98,6 +98,52 @@ function addWorkers(req, res) {
   req.pipe(busboy);
 }
 
+function uploadFoto(req, res) {
+  const busboy = new Busboy({ headers: req.headers });
+
+  function abort() {
+    req.unpipe(busboy);
+    if (!req.aborted) {
+      res.statusCode = 413;
+      res.end();
+    }
+  }
+
+  busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+    switch (fieldname) {
+      case 'photo':
+        {
+          const destname = randomFileName(mimetype);
+          const store = fs.createWriteStream(
+            path.resolve(__dirname, `../../db/photos/${destname}`)
+          );
+          file.on('error', abort);
+          store.on('error', abort);
+          file.pipe(store);
+        }
+        break;
+      default: {
+        const noop = new Writable({
+          write(chunk, encding, callback) {
+            setImmediate(callback);
+          },
+        });
+        file.pipe(noop);
+      }
+    }
+  });
+
+  busboy.on('finish', async () => {
+    res.end();
+  });
+
+  req.on('aborted', abort);
+  busboy.on('error', abort);
+
+  req.pipe(busboy);
+}
+
 module.exports = {
   addWorkers,
+  uploadFoto,
 };
