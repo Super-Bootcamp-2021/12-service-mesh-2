@@ -31,7 +31,7 @@ client.on('connect', async (error) => {
 
 function setWorker(obj){
   db.worker[obj.name] = {
-    pekerja: obj.pekerja,
+    profile: obj.profile,
     email: obj.email,
     alamat: obj.alamat,
     telp: obj.telp,
