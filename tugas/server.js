@@ -1,8 +1,10 @@
 const { createServer } = require('http')
 const url = require('url')
 const { stdout } = require('process')
+const {saveWorker,getWorker} = require('./worker-service');
 
 //Worker service module here
+
 
 //Task service module here
 
@@ -21,9 +23,9 @@ const server = createServer((req, res) => {
     switch (true) {
         case uri.pathname === '/worker':
             if (method === 'GET') {
-                // get worker data 
+                getWorker(req,res);
             } else if (method === 'POST') {
-                // save worker data
+                saveWorker(req,res);
             } else {
                 message = 'Method tidak tersedia'
                 respond()
