@@ -16,13 +16,14 @@ function randomFileName(mimetype) {
     );
   }
 
+// save data worker
 function saveWorker(req, res) {
     const busboy = new Busboy({ headers: req.headers })
     const client = createClient()
     const redisSet = setAsync(client)
     const redisGet = getAsync(client)
 
-    let data = {
+    let data = {        // set bentuk data agar ketika di get tidak otomatis diurutkan berdasarkan key
         id: '',
         name: '',
         address: '',
@@ -42,13 +43,13 @@ function saveWorker(req, res) {
 
     async function saveData(data, res) {
         try {
-            const workers = JSON.parse(await redisGet('worker'))
+            const workers = JSON.parse(await redisGet('worker')) //get data dari db kv
 
-            if (workers === null) {
+            if (workers === null) { // jika db kosong maka membuat data baru dengan start id 1
                 data.id = 1
                 await redisSet('worker', JSON.stringify([data]))
             } else {
-                data.id = workers.length + 1
+                data.id = workers.length + 1 // jika db tidak kosong maka id = jumlah data + 1
                 workers.push(data)
                 await redisSet('worker', JSON.stringify(workers))
             }
@@ -113,6 +114,7 @@ function saveWorker(req, res) {
     req.pipe(busboy)
 }
 
+//get data worker
 async function getWorker(req, res) {
     const client = createClient()
     const redisGet = getAsync(client)
@@ -139,6 +141,7 @@ async function getWorker(req, res) {
     req.on('aborted', abort)
 }
 
+//detele data worker
 async function deleteWorker(req, res) {
     const uri = url.parse(req.url, true)
     const id = uri.pathname.replace('/worker/', '')
@@ -148,18 +151,18 @@ async function deleteWorker(req, res) {
 
     async function deleteData(id,res){
         try {
-            const data = JSON.parse(await redisGet('worker'))
+            const data = JSON.parse(await redisGet('worker')) //get semua data
             let message
             let isFound = false
 
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].id == id) {
+            for (let i = 0; i < data.length; i++) {    
+                if (data[i].id == id) { // mencari id yang cocok
                     data[i].deleted = true
                     isFound = true
                 }
             }
 
-            if (isFound) {
+            if (isFound) { //handler ketika data ditemukan
                 await redisSet('worker', JSON.stringify(data))
                 message = JSON.stringify({
                     status: 'success',
@@ -170,6 +173,8 @@ async function deleteWorker(req, res) {
                 res.write(message)
                 res.end()
             }
+
+            //handler ketika tidak ditemukan
             message = JSON.stringify({
                 status: 'error',
                 message: 'data not found',
