@@ -1,7 +1,7 @@
 const { createServer } = require('http')
 const url = require('url')
 const { stdout } = require('process')
-const {saveWorker,getWorker} = require('./worker-service');
+const {saveWorker,getWorker,deleteWorker} = require('./worker-service');
 
 //Worker service module here
 
@@ -26,7 +26,10 @@ const server = createServer((req, res) => {
                 getWorker(req,res);
             } else if (method === 'POST') {
                 saveWorker(req,res);
-            } else {
+            } else if (method === 'DELETE'){
+                deleteWorker(req,res);
+            }
+            else {
                 message = 'Method tidak tersedia'
                 respond()
             }

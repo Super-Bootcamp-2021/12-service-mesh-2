@@ -4,13 +4,15 @@ const mime = require('mime-types')
 const Busboy = require('busboy')
 const url = require('url')
 
-const { createClient, getAsync, setAsync, delAsync } = require('./redist-handler')
+const { createClient, getAsync, setAsync } = require('./redist-handler')
 
 function saveWorker(req, res) {
     const busboy = new Busboy({ headers: req.headers });
     const client = createClient();
     const redisSet = setAsync(client);
-    let data = {};
+    const redis = setAsync(client);
+
+    let data = {deleted:false};
 
     function abort() {
         req.unpipe(busboy)
@@ -21,7 +23,7 @@ function saveWorker(req, res) {
     }
 
     async function saveData(data,res) {
-        try {
+        try { 
             await redisSet('worker', JSON.stringify(data));
             res.write(JSON.stringify({"status": "success","message": "success add new data"}));
             res.statusCode = 200;
@@ -34,7 +36,7 @@ function saveWorker(req, res) {
 
     busboy.on('field', (fieldname, val) => {
         data[fieldname] = val
-    })
+    });
 
     busboy.on('finish', () => {
 
@@ -67,8 +69,9 @@ async function getWorker(req, res) {
         }
     }
 
-    
     const data = JSON.parse(await redisGet('worker'));
+
+
     const message = JSON.stringify({"status": "success","message": "success get data","data":data});
     res.setHeader('Content-Type','application/json');
     res.statusCode = 200;
@@ -78,5 +81,26 @@ async function getWorker(req, res) {
 
 }
 
+async function deleteWorker(req, res) {
+    const client = createClient();
+    const redisGet = getAsync(client);
+    const redisSet = setAsync(client);
 
-module.exports = {saveWorker,getWorker};
+    client.on('error', (error) => {
+        client.end(true)
+    })
+
+    client.on('connect', async () => {
+        const data = JSON.parse(await redisGet('worker'));
+        data.deleted = true;
+        await redisSet('worker', JSON.stringify(data));
+        const message = JSON.stringify({"status": "success","message": "success delete data"});
+        res.setHeader('Content-Type','application/json');
+        res.statusCode = 200;
+        res.write(message);
+        res.end();
+    })
+}
+
+
+module.exports = {saveWorker,getWorker,deleteWorker};
