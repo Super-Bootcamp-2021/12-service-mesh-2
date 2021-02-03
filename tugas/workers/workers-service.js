@@ -87,6 +87,7 @@ function workersRead(req, res) {
     try {
       const val = await getAsync('workers');
       console.log(val);
+      client.end(true)
     } catch (error) {
       console.log(error)
     }
