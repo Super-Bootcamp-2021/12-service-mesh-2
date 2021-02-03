@@ -86,9 +86,9 @@ const server = createServer(async (req, res) => {
             respond();
             break;
     }
-    // res.statusCode = statusCode;
-    // res.write(message);
-    // res.end();
+    res.statusCode = statusCode;
+    res.write(message);
+    res.end();
 });
 
 const PORT = 7000;

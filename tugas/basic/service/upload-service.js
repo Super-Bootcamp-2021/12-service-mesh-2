@@ -107,27 +107,27 @@ function deleteService(req, res) {
         if (!filename) {
             res.statusCode = 400;
             res.write('request tidak sesuai');
-            res.end();
-        }
+            //res.end();
+        } else {
+            const file = path.resolve(__dirname, `./file-storage/${filename}`);
+            const exist = fs.existsSync(file);
         
-        const file = path.resolve(__dirname, `./file-storage/${filename}`);
-        const exist = fs.existsSync(file);
-    
-        if (!exist) {
-            res.statusCode = 404;
-            res.write('file tidak ditemukan');
-            res.end();
-        }
-    
-        fs.unlink(file, function (err) {
-            if (err) throw err;
-            // if no error, file has been deleted successfully
-            console.log('File deleted!');
-        });
-
-        res.setHeader('Content-Type', mime.lookup(filename));
-        res.statusCode = 200;
-        res.end();
+            if (!exist) {
+                res.statusCode = 404;
+                res.write('file tidak ditemukan');
+                //res.end();
+            } else {
+                fs.unlink(file, function (err) {
+                    if (err) throw err;
+                    // if no error, file has been deleted successfully
+                    console.log('File deleted!');
+                });
+        
+                res.setHeader('Content-Type', mime.lookup(filename));
+                res.statusCode = 200;
+                //res.end();
+            }
+        }                            
     }
     catch(err) {
         console.log(err);
