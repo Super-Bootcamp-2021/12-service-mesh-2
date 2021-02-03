@@ -30,17 +30,35 @@ function uploadService(req, res) {
     }
   }
 
+  let data = {};
+
+
   busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
     switch (fieldname) {
       case 'photo':
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `./file-storage/${destname}`)
+            path.resolve(__dirname, `./photo/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
+          data["photo"] = "localhost:9999/photo/" + destname;
+        }
+        break;
+      case 'attachment':
+        {
+          const destname = randomFileName(mimetype);
+          const store = fs.createWriteStream(
+            path.resolve(__dirname, `./attachment/${destname}`)
+          );
+          file.on('error', abort);
+          store.on('error', abort);
+          file.pipe(store);
+          file.pipe(store);
+          data["photo"] = "localhost:9999/attachment/" + destname;
+
         }
         break;
       default: {
@@ -53,7 +71,7 @@ function uploadService(req, res) {
       }
     }
   });
-  let data = {};
+  
   busboy.on('field', (fieldname, val) => {
     data[fieldname] = val;
   });
@@ -93,3 +111,4 @@ module.exports = {
   uploadService,
   readService,
 };
+
