@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const Busboy = require('busboy');
-const url = require('url');
 const { Writable } = require('stream');
+const { save } = require('../../db/redis/redis');
+const { CONFIG } = require('../../config');
 
 function randomFileName(mimetype) {
   return (
@@ -15,7 +16,54 @@ function randomFileName(mimetype) {
   );
 }
 
-function uploadService(req, res) {
+function addTask(req, res) {
+  const busboy = new Busboy({ headers: req.headers });
+
+  let job = '';
+  let worker = '';
+
+  function abort() {
+    req.unpipe(busboy);
+    if (!req.aborted) {
+      res.statusCode = 413;
+      res.end();
+    }
+  }
+
+  busboy.on('field', (fieldname, val) => {
+    switch (fieldname) {
+      case 'job':
+        job = val;
+        break;
+      case 'worker':
+        worker = val;
+        break;
+      case 'worker':
+        status = (val === "") ? 'unfinished' : val;
+        break;
+
+      default:
+        break;
+    }
+  });
+  busboy.on('finish', async () => {
+    const input = {
+      job: job,
+      worker: worker,
+      status : status,
+    };
+    await save(CONFIG.TASK, input);
+    console.log(input);
+    res.end();
+  });
+
+  req.on('aborted', abort);
+  busboy.on('error', abort);
+
+  req.pipe(busboy);
+}
+
+function uploadAttachment(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
   function abort() {
@@ -32,7 +80,7 @@ function uploadService(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `./file-storage/${destname}`)
+            path.resolve(__dirname, `../../db/task-files/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
@@ -41,7 +89,7 @@ function uploadService(req, res) {
         break;
       default: {
         const noop = new Writable({
-          write(chunk, encoding, callback) {
+          write(chunk, encding, callback) {
             setImmediate(callback);
           },
         });
@@ -50,10 +98,7 @@ function uploadService(req, res) {
     }
   });
 
-  busboy.on('field', (fieldname, val) => {
-    console.log(val);
-  });
-  busboy.on('finish', () => {
+  busboy.on('finish', async () => {
     res.end();
   });
 
@@ -63,28 +108,7 @@ function uploadService(req, res) {
   req.pipe(busboy);
 }
 
-function readService(req, res) {
-  const uri = url.parse(req.url, true);
-  const filename = uri.pathname.replace('/read/', '');
-  if (!filename) {
-    res.statusCode = 400;
-    res.write('request tidak sesuai');
-    res.end();
-  }
-  const file = path.resolve(__dirname, `./file-storage/${filename}`);
-  const exist = fs.existsSync(file);
-  if (!exist) {
-    res.statusCode = 404;
-    res.write('file tidak ditemukan');
-    res.end();
-  }
-  const fileRead = fs.createReadStream(file);
-  res.setHeader('Content-Type', mime.lookup(filename));
-  res.statusCode = 200;
-  fileRead.pipe(res);
-}
-
 module.exports = {
-  uploadService,
-  readService,
+  addTask,
+  uploadAttachment,
 };
