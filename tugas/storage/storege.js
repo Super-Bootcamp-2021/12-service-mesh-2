@@ -83,11 +83,13 @@ function readServiceTask(req, res, obj) {
     res.end();
   }
   const fileRead = fs.createReadStream(file);
-  res.setHeader('Content-Type', 'application/json',mime.lookup(filename));
+  res.setHeader('Content-Type', 'application/json', mime.lookup(filename));
   res.statusCode = 200;
   fileRead.pipe(res);
   res.end();
 }
 module.exports = {
-  upload, readServiceTask, readServicePhoto
+  upload,
+  readServiceTask,
+  readServicePhoto,
 };
