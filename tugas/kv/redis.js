@@ -11,18 +11,34 @@ client.on('error', (error) => {
   client.end(true);
 });
 
-client.on('connect', () => {
-  main();
-});
-
-async function main() {
+async function setValue(profile) {
   try {
-    await setAsync('name', 'budiman');
-    const val = await getAsync('name');
-    console.log(val);
-    await delAsync('name');
-    client.end(true);
+    await setAsync(profile.name, JSON.stringify(profile));
   } catch (err) {
     console.error(err);
   }
 }
+async function getValue(fieldname) {
+  try {
+    let store = await getAsync(fieldname);
+    const result = JSON.parse(store);
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
+async function delValue(fieldname) {
+  try {
+    await delAsync(fieldname);
+    const result = 'Berhasil di hapus';
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+module.exports = {
+  getValue,
+  setValue,
+  delValue,
+};
