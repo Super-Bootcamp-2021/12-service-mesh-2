@@ -1,4 +1,4 @@
 node_modules
 .nyc_output
 *.db
-materi/storage/file-storage
+file-storage

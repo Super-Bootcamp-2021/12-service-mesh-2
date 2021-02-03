@@ -76,22 +76,23 @@ function readService(req, res) {
         if (!filename) {
             res.statusCode = 400;
             res.write('request tidak sesuai');
-            res.end();
-        }
-        
-        const file = path.resolve(__dirname, `./file-storage/${filename}`);
-        const exist = fs.existsSync(file);
-        
-        if (!exist) {
-            res.statusCode = 404;
-            res.write('file tidak ditemukan');
-            res.end();
+            //res.end();
         } else {
-            const fileRead = fs.createReadStream(file);
-            res.setHeader('Content-Type', mime.lookup(filename));
-            res.statusCode = 200;
-            fileRead.pipe(res);
-        }        
+        
+            const file = path.resolve(__dirname, `./file-storage/${filename}`);
+            const exist = fs.existsSync(file);
+            
+            if (!exist) {
+                res.statusCode = 404;
+                res.write('file tidak ditemukan');
+                //res.end();
+            } else {
+                const fileRead = fs.createReadStream(file);
+                res.setHeader('Content-Type', mime.lookup(filename));
+                res.statusCode = 200;
+                fileRead.pipe(res);
+            }        
+        }
     }
     catch(err) {
         console.log(err);

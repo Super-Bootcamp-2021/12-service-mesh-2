@@ -31,6 +31,7 @@ const server = createServer(async (req, res) => {
     
     switch (true) {
         case /^\/store/.test(uri.pathname):
+            console.log(req.headers);
             if (method === 'POST') {
                 message = uploadService(req, res);                  
             } else {
