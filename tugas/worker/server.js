@@ -5,14 +5,23 @@ const { listSvc, registerSvc, removeSvc } = require('./worker.service');
 
 let server;
 
+/**
+ * run server
+ */
 function run() {
   server = createServer((req, res) => {
+    /**
+     * write http response message
+     * @param {number} statusCode http response code, default to 200
+     * @param {string} message respose message
+     */
     function respond(statusCode, message) {
       res.statusCode = statusCode || 200;
       res.write(message || '');
       res.end();
     }
 
+    // route service based on its pathname
     const uri = url.parse(req.url, true);
     switch (uri.pathname) {
       case '/register':
@@ -48,6 +57,9 @@ function run() {
   });
 }
 
+/**
+ * stop server
+ */
 function stop() {
   if (server) {
     server.close();

@@ -9,7 +9,14 @@ const {
   ERROR_WORKER_NOT_FOUND,
 } = require('./worker');
 const { saveFile } = require('../lib/storage');
+// eslint-disable-next-line no-unused-vars
+const { IncomingMessage, ServerResponse } = require('http');
 
+/**
+ * service to register new worker
+ * @param {IncomingMessage} req
+ * @param {ServerResponse} res
+ */
 function registerSvc(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
@@ -82,6 +89,11 @@ function registerSvc(req, res) {
   req.pipe(busboy);
 }
 
+/**
+ * service to get list of workers
+ * @param {IncomingMessage} req
+ * @param {ServerResponse} res
+ */
 async function listSvc(req, res) {
   const workers = await list();
   res.setHeader('content-type', 'application/json');
@@ -89,6 +101,11 @@ async function listSvc(req, res) {
   res.end();
 }
 
+/**
+ * service to remove a worker by it's id
+ * @param {IncomingMessage} req
+ * @param {ServerResponse} res
+ */
 async function removeSvc(req, res) {
   const uri = url.parse(req.url, true);
   const id = uri.query['id'];
@@ -99,10 +116,10 @@ async function removeSvc(req, res) {
     return;
   }
   try {
-    const workers = await remove(id);
+    const worker = await remove(id);
     res.setHeader('content-type', 'application/json');
     res.statusCode = 200;
-    res.write(JSON.stringify(workers));
+    res.write(JSON.stringify(worker));
     res.end();
   } catch (err) {
     if (err === ERROR_WORKER_NOT_FOUND) {

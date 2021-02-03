@@ -1,6 +1,10 @@
 const redis = require('./lib/redis');
 const server = require('./worker/server');
 
+/**
+ * main routine
+ * @returns {Promise<void>}
+ */
 async function main() {
   try {
     console.log('connect to redis service...');
