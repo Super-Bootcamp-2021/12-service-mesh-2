@@ -15,6 +15,10 @@ function randomFileName(mimetype) {
   );
 }
 
+function saveFile(){
+  
+}
+
 function uploadService(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
@@ -26,17 +30,34 @@ function uploadService(req, res) {
     }
   }
 
+  let data = {};
+
+
   busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
     switch (fieldname) {
       case 'photo':
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `./file-storage/${destname}`)
+            path.resolve(__dirname, `./photo/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
+          data["photo"] = "localhost:9999/photo/" + destname;
+
+        }
+        break;
+      case 'attachment':
+        {
+          const destname = randomFileName(mimetype);
+          const store = fs.createWriteStream(
+            path.resolve(__dirname, `./attachment/${destname}`)
+          );
+          file.on('error', abort);
+          store.on('error', abort);
+          file.pipe(store);
+          data["photo"] = "localhost:9999/attachment/" + destname;
         }
         break;
       default: {
@@ -49,11 +70,12 @@ function uploadService(req, res) {
       }
     }
   });
-
+  
   busboy.on('field', (fieldname, val) => {
-    console.log(val);
+    data[fieldname] = val;
   });
   busboy.on('finish', () => {
+    res.write(JSON.stringify(data));
     res.end();
   });
 
