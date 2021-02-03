@@ -11,17 +11,17 @@ client.on('error', (error) => {
   client.end(true);
 });
 
-client.on("connect", () => {
+client.on('connect', () => {
   main();
 });
 
 async function main() {
   try {
-    await setAsync("name", "budiman");
+    await setAsync('name', 'budiman');
     const val = await getAsync('name');
     console.log(val);
     await delAsync('name');
-    client.end(true)
+    client.end(true);
   } catch (err) {
     console.error(err);
   }

@@ -1,8 +1,7 @@
-const { createServer } = require("http");
-const url = require("url");
-const { stdout } = require("process");
-const { uploadService, readService } = require("./storage-service");
-
+const { createServer } = require('http');
+const url = require('url');
+const { stdout } = require('process');
+const { uploadService, readService } = require('./storage-service');
 
 const server = createServer((req, res) => {
   let method = req.method;

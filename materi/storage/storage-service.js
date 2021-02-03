@@ -8,16 +8,16 @@ const { Writable } = require('stream');
 function randomFileName(mimetype) {
   return (
     new Date().getTime() +
-    "-" +
+    '-' +
     Math.round(Math.random() * 1000) +
-    "." +
+    '.' +
     mime.extension(mimetype)
   );
 }
 
 function uploadService(req, res) {
   const busboy = new Busboy({ headers: req.headers });
-  
+
   function abort() {
     req.unpipe(busboy);
     if (!req.aborted) {
@@ -86,5 +86,5 @@ function readService(req, res) {
 
 module.exports = {
   uploadService,
-  readService
-}
+  readService,
+};
