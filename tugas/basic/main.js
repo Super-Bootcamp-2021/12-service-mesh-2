@@ -21,28 +21,37 @@ const server = createServer(async (req, res) => {
     let message = "404 not found";
     let statusCode = 200;
     
+    const respond = () => {
+        res.statusCode = statusCode;
+        res.write(message);
+        res.end();
+    };
+
     const uri = url.parse(req.url, true);
     
     switch (true) {
         case /^\/store/.test(uri.pathname):
             if (method === 'POST') {
-                message = await uploadService(req, res);                  
+                message = uploadService(req, res);                  
             } else {
-                message = 'Method tidak tersedia';                
+                message = 'Method tidak tersedia';   
+                respond();             
             }
             break;            
         case /^\/read\/\w+/.test(uri.pathname):
             if (method === 'GET') {
                 message = readService(req, res);
             } else {
-                message = 'Method tidak tersedia';                
+                message = 'Method tidak tersedia';
+                respond();
             }
             break;
         case /^\/delete\/\w+/.test(uri.pathname):
             if (method === 'GET') {
                 deleteService(req, res);
             } else {
-                message = 'Method tidak tersedia';                
+                message = 'Method tidak tersedia';
+                respond();                
             }
             break;
         case /^\/set/.test(uri.pathname):
@@ -50,13 +59,15 @@ const server = createServer(async (req, res) => {
                 message = await set(uri.query["key"],uri.query["value"]);        
             } else {
                 message = 'Method tidak tersedia';                
+                respond();
             }            
             break;
         case /^\/get/.test(uri.pathname):
             if (method === 'GET') {
                 message = await get(uri.query["key"]);        
             } else {
-                message = 'Method tidak tersedia';                
+                message = 'Method tidak tersedia';            
+                respond();    
             } 
             
             break;
@@ -65,16 +76,18 @@ const server = createServer(async (req, res) => {
                 message = await del(uri.query["key"]);        
             } else {
                 message = 'Method tidak tersedia';                
+                respond();
             } 
             
             break;
         default:
             statusCode = 404;            
+            respond();
             break;
     }
-    res.statusCode = statusCode;
-    res.write(message);
-    res.end();
+    // res.statusCode = statusCode;
+    // res.write(message);
+    // res.end();
 });
 
 const PORT = 7000;

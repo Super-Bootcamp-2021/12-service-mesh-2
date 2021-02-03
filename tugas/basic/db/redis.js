@@ -9,7 +9,7 @@ promisifyAll(redis);
 async function set(key, value) {
     try {
         await client.setAsync(key, value);        
-        return 'secces set';
+        return 'succes set';
     } catch (err) {
         console.error(err);
     }
@@ -27,7 +27,7 @@ async function get(key) {
 async function del(key) {
     try {
         await client.delAsync(key);   
-        return 'secces delete';
+        return 'succes delete';
     } catch (err) {
         console.error(err);
     }
