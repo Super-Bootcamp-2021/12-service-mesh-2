@@ -2,7 +2,7 @@ const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
 const { workerStore, workersRead } = require('./workers/workers-service');
-const { taskStore, tasksRead } = require('./tasks/tasks-service');
+const { taskStore } = require('./tasks/tasks-service');
 
 const server = createServer((req, res) => {
   let method = req.method;
@@ -24,7 +24,7 @@ const server = createServer((req, res) => {
         respond();
       }
       break;
-		case uri.pathname === '/taskstore':
+    case uri.pathname === '/taskstore':
       if (method === 'POST') {
         taskStore(req, res);
       } else {
@@ -32,17 +32,9 @@ const server = createServer((req, res) => {
         respond();
       }
       break;
-		case uri.pathname === '/workersread':
+    case uri.pathname === '/workersread':
       if (method === 'GET') {
         workersRead(req, res);
-      } else {
-        message = 'Method tidak tersedia';
-        respond();
-      }
-      break;
-		case uri.pathname === '/tasksread':
-      if (method === 'GET') {
-        tasksRead(req, res);
       } else {
         message = 'Method tidak tersedia';
         respond();
