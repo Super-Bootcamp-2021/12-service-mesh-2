@@ -3,8 +3,9 @@ const { read } = require('../../db/redis/redis');
 
 async function readWorkers(req, res) {  
     const data = await read(CONFIG.WORKER);  
-    const dataParsed = await JSON.stringify(data)
-    res.write(JSON.stringify(JSON.parse(dataParsed)));
+    const dataParsed = await JSON.stringify(data);
+    const dataFinal = await dataParsed.replace(/\\/g, '');
+    res.write(dataFinal);
     res.end();
 }
 

@@ -24,7 +24,7 @@ async function del(db) {
 
 async function read(db) {
   let value = await hvalsAsync(db);
-  return value
+  return value;
 
 }
 
