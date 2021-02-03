@@ -41,7 +41,7 @@ function uploadService(req, res) {
         break;
       default: {
         const noop = new Writable({
-          write(chunk, encding, callback) {
+          write(chunk, encoding, callback) {
             setImmediate(callback);
           },
         });
