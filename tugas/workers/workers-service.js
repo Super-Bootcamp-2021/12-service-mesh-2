@@ -61,7 +61,8 @@ function workersStore(req, res) {
   });
 
   busboy.on('field', (fieldname, val) => {
-    console.log(val);
+    
+    console.log(JSON.stringify(val));
   });
   busboy.on('finish', () => {
     res.end();
@@ -78,18 +79,30 @@ function workersRead(req, res) {
   const client = redis.createClient();
   const getAsync = promisify(client.get).bind(client);
 
+  let message = "Data tidak ditemukan";
+  let statusCode = 404;
+
+  const respond = () => {
+    res.statusCode = statusCode;
+    res.write(message);
+    res.end();
+  }
+
   client.on('error', (error) => {
+    respond();
     console.error(error);
     client.end(true);
   });
 
-  client.on('connect', () => {
+  client.on('connect', async () => {
     try {
       const val = await getAsync('workers');
       console.log(val);
-      client.end(true)
+      message = val;
+      respond();
+      client.end(true);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   });
 }
