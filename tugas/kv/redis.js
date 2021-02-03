@@ -16,12 +16,20 @@ client.on('error', (error) => {
   client.end(true);
 });
 
-client.on('connect', async (error)=>{
+client.on('connect', async (error) => {
   const store = await getAsync('db');
-  db = JSON.parse(store);
+  if (store === null) {
+    db = {
+      worker: {},
+      task: {},
+    };
+  }
+  else {
+    db = JSON.parse(store);
+  }
 });
 
-function setWorker(obj){
+function setWorker(obj) {
   db.worker[obj.name] = {
     profile: obj.profile,
     email: obj.email,
