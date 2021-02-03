@@ -33,7 +33,7 @@ function uploadFiles(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `./data/photos/${destname}`)
+            path.resolve(__dirname, `./db/photos/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
@@ -44,7 +44,7 @@ function uploadFiles(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `./data/task-files/${destname}`)
+            path.resolve(__dirname, `./db/task-files/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
