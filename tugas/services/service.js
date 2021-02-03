@@ -45,7 +45,7 @@ const server = createServer((req, res) => {
       break;
     case uri.pathname == '/delete-worker':
       if (method === 'DELETE') {
-        deleteWorkers();
+        deleteWorkers(res);
       } else {
         message = 'Method tidak tersedia';
         respond();

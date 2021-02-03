@@ -1,7 +1,7 @@
 const { CONFIG } = require('../../config');
 const { del } = require('../../db/redis/redis');
 
-function deleteWorkers() {
+function deleteWorkers(res) {
   del(CONFIG.WORKER);
   res.end()
 }
