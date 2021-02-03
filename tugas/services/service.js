@@ -1,7 +1,7 @@
 const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
-const { uploadFiles,addWorkers } = require('../lib/create-function');
+const {  addWorkers } = require('../lib/worker/create-worker');
 
 const server = createServer((req, res) => {
   let method = req.method;
@@ -14,30 +14,33 @@ const server = createServer((req, res) => {
     res.end();
   };
   switch (true) {
-    case uri.pathname === '/add':
-        if (method === 'POST') {
-            addWorkers(req, res);
-        } else {
-            message = 'Method tidak tersedia';
-            respond();
-        }
-        break;
-    case uri.pathname === '/upload':
-          if (method === 'POST') {
-              uploadFiles(req, res);
-          } else {
-              message = 'Method tidak tersedia';
-              respond();
-          }
-          break;
+    case uri.pathname === '/add-worker':
+      if (method === 'POST') {
+        addWorkers(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case uri.pathname === '/add-task':
+      if (method === 'POST') {
+        uploadFiles(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
     default:
       statusCode = 404;
       respond();
   }
 });
 
-const PORT = 1979;
-server.listen(PORT, () => {
-  stdout.write(`server listening on port ${PORT}\n`);
-});
+function start() {
+  const PORT = 1979;
+  server.listen(PORT, () => {
+    stdout.write(`server listening on port ${PORT}\n`);
+  });
+}
 
+module.exports = { server, start };
