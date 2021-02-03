@@ -4,7 +4,7 @@ const mime = require('mime-types')
 const Busboy = require('busboy')
 const url = require('url')
 
-const { createClient, getAsync, setAsync, delAsync } = require('./redist-handler')
+const { createClient, getAsync, setAsync } = require('./redist-handler')
 
 function randomFileName(mimetype) {
     return (
@@ -16,11 +16,22 @@ function randomFileName(mimetype) {
     );
   }
 
+// save data worker
 function saveWorker(req, res) {
-    const busboy = new Busboy({ headers: req.headers });
-    const client = createClient();
-    const redisSet = setAsync(client);
-    let data = {};
+    const busboy = new Busboy({ headers: req.headers })
+    const client = createClient()
+    const redisSet = setAsync(client)
+    const redisGet = getAsync(client)
+
+    let data = {        // set bentuk data agar ketika di get tidak otomatis diurutkan berdasarkan key
+        id: '',
+        name: '',
+        address: '',
+        email: '',
+        phone: '',
+        biografi: '',
+        deleted: false,
+    }
 
     function abort() {
         req.unpipe(busboy)
@@ -30,13 +41,28 @@ function saveWorker(req, res) {
         }
     }
 
-    async function saveData(data,res) {
+    async function saveData(data, res) {
         try {
-            await redisSet('worker', JSON.stringify(data));
-            res.write(JSON.stringify({"status": "success","message": "success add new data"}));
-            res.statusCode = 200;
-            client.end(true);
-            res.end();
+            const workers = JSON.parse(await redisGet('worker')) //get data dari db kv
+
+            if (workers === null) { // jika db kosong maka membuat data baru dengan start id 1
+                data.id = 1
+                await redisSet('worker', JSON.stringify([data]))
+            } else {
+                data.id = workers.length + 1 // jika db tidak kosong maka id = jumlah data + 1
+                workers.push(data)
+                await redisSet('worker', JSON.stringify(workers))
+            }
+
+            res.write(
+                JSON.stringify({
+                    status: 'success',
+                    message: 'success add new data',
+                })
+            )
+            res.statusCode = 200
+            client.end(true)
+            res.end()
         } catch (err) {
             console.error(err)
         }
@@ -72,16 +98,14 @@ function saveWorker(req, res) {
       });
     
     busboy.on('finish', () => {
-
         client.on('error', (error) => {
             console.error(error)
             client.end(true)
         })
 
         client.on('connect', () => {
-            saveData(data,res);
+            saveData(data, res)
         })
-
     })
 
     req.on('aborted', abort)
@@ -90,9 +114,10 @@ function saveWorker(req, res) {
     req.pipe(busboy)
 }
 
+//get data worker
 async function getWorker(req, res) {
-    const client = createClient();
-    const redisGet = getAsync(client);
+    const client = createClient()
+    const redisGet = getAsync(client)
 
     function abort() {
         req.unpipe(busboy)
@@ -102,14 +127,81 @@ async function getWorker(req, res) {
         }
     }
 
-    const data = JSON.parse(await redisGet('worker'));
-    const message = JSON.stringify({"status": "success","message": "success get data","data":data});
-    res.setHeader('Content-Type','application/json');
-    res.statusCode = 200;
-    res.write(message);
-    res.end();
-    req.on('aborted', abort);
+    const data = JSON.parse(await redisGet('worker'))
 
+    const message = JSON.stringify({
+        status: 'success',
+        message: 'success get data',
+        data: data,
+    })
+    res.setHeader('Content-Type', 'application/json')
+    res.statusCode = 200
+    res.write(message)
+    res.end()
+    req.on('aborted', abort)
+}
+
+//detele data worker
+async function deleteWorker(req, res) {
+    const uri = url.parse(req.url, true)
+    const id = uri.pathname.replace('/worker/', '')
+    const client = createClient()
+    const redisGet = getAsync(client)
+    const redisSet = setAsync(client)
+
+    async function deleteData(id,res){
+        try {
+            const data = JSON.parse(await redisGet('worker')) //get semua data
+            let message
+            let isFound = false
+
+            for (let i = 0; i < data.length; i++) {    
+                if (data[i].id == id) { // mencari id yang cocok
+                    data[i].deleted = true
+                    isFound = true
+                }
+            }
+
+            if (isFound) { //handler ketika data ditemukan
+                await redisSet('worker', JSON.stringify(data))
+                message = JSON.stringify({
+                    status: 'success',
+                    message: 'success delete data',
+                })
+                res.setHeader('Content-Type', 'application/json')
+                res.statusCode = 200
+                res.write(message)
+                res.end()
+            }
+
+            //handler ketika tidak ditemukan
+            message = JSON.stringify({
+                status: 'error',
+                message: 'data not found',
+            })
+            res.setHeader('Content-Type', 'application/json')
+            res.statusCode = 404
+            res.write(message)
+            res.end()
+        } catch (error) {
+            message = JSON.stringify({
+                status: 'error',
+                message: error.toString(),
+            })
+            res.setHeader('Content-Type', 'application/json')
+            res.statusCode = 400
+            res.write(message)
+            res.end()
+        }
+    }
+
+    client.on('error', (error) => {
+        client.end(true)
+    })
+
+    client.on('connect', () => {
+        deleteData(id,res);
+    })
 }
 
 function photoService(req, res) {
@@ -133,4 +225,4 @@ function photoService(req, res) {
     fileRead.pipe(res);
   }
 
-module.exports = {saveWorker,getWorker,photoService};
+module.exports = { saveWorker, getWorker, deleteWorker,photoService}
