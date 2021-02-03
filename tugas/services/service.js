@@ -1,9 +1,9 @@
 const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
-const {  addWorkers, readWorkers } = require('../lib/worker/main');
+const {  addWorkers, readWorkers, uploadFoto } = require('../lib/worker/main');
+const { addTask,uploadAttachment } = require('../lib/task/main');
 const { addTask } = require('../lib/task/create-task');
-
 
 const server = createServer((req, res) => {
   let method = req.method;
@@ -43,6 +43,14 @@ const server = createServer((req, res) => {
     case uri.pathname === '/upload-photo':
         if (method === 'POST') {
           uploadFoto(req, res);
+        } else {
+          message = 'Method tidak tersedia';
+          respond();
+        }
+        break;
+    case uri.pathname === '/upload-attachment':
+        if (method === 'POST') {
+          uploadAttachment(req, res);
         } else {
           message = 'Method tidak tersedia';
           respond();
