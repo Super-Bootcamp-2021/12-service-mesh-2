@@ -33,7 +33,7 @@ function uploadFiles(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `../data/photos/${destname}`)
+            path.resolve(__dirname, `./db/photos/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
@@ -44,7 +44,7 @@ function uploadFiles(req, res) {
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `../data/task-files/${destname}`)
+            path.resolve(__dirname, `./db/task-files/${destname}`)
           );
           file.on('error', abort);
           store.on('error', abort);
@@ -53,7 +53,7 @@ function uploadFiles(req, res) {
         break;
       default: {
         const noop = new Writable({
-          write(chunk, encding, callback) {
+          write(chunk, encoding, callback) {
             setImmediate(callback);
           },
         });
@@ -100,7 +100,7 @@ function addWorkers(req, res) {
             const destname = randomFileName(mimetype);
             profil = destname;
             const store = fs.createWriteStream(
-              path.resolve(__dirname, `./profil-workers/${destname}`)
+              path.resolve(__dirname, `./db/profil/${destname}`)
             );
             file.on('error', abort);
             store.on('error', abort);
@@ -147,7 +147,7 @@ function addWorkers(req, res) {
             "telp":telp,
             "biografi":biografi
         });
-        req.write(input);
+        res.write(input);
         res.end();
     });
   

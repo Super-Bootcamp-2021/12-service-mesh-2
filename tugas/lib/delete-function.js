@@ -11,7 +11,7 @@ function deleteWorkers(req, res) {
       res.end();
     }
 
-    const file = path.resolve(__dirname, `./profil-workers/${filename}`);
+    const file = path.resolve(__dirname, `./db/profil/${filename}`);
     const exist = fs.existsSync(file);
     if (!exist) {
       res.statusCode = 404;
@@ -19,7 +19,7 @@ function deleteWorkers(req, res) {
       res.end();
     }
 
-   const remove = fs.unlink(path.resolve(__dirname, `./profil-workers/${filename}`), (err) => {
+   const remove = fs.unlink(path.resolve(__dirname, `./db/profil/${filename}`), (err) => {
         if (err) {
             res.statusCode = 400;
             res.write('delete error');
