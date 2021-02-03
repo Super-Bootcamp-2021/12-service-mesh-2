@@ -8,6 +8,14 @@ const {
   getValueByNameService,
 } = require('./working-service');
 
+
+const {
+  storeTaskService,
+  getTaskService,
+  getTaskByNameService,
+  upTaskByNameService,
+} = require('./task-service');
+
 const server = createServer(async (req, res) => {
   let method = req.method;
   // route service
@@ -47,6 +55,38 @@ const server = createServer(async (req, res) => {
     case /^\/del\/\w+/.test(uri.pathname):
       if (method === 'GET') {
         delValueService(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case uri.pathname === '/task':
+      if (method === 'POST') {
+        storeTaskService(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case uri.pathname === '/getalltask':
+      if (method === 'GET') {
+        getTaskService(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case /^\/cari\/\w+/.test(uri.pathname):
+      if (method === 'GET') {
+        getTaskByNameService(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case /^\/update\/\w+/.test(uri.pathname):
+      if (method === 'PUT') {
+       upTaskByNameService(req, res);
       } else {
         message = 'Method tidak tersedia';
         respond();
