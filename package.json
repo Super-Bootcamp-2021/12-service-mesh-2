@@ -20,19 +20,14 @@
     "nyc": "^15.1.0"
   },
   "dependencies": {
+    "bluebird": "^3.7.2",
     "busboy": "^0.3.1",
     "etcd3": "^1.1.0",
-    "mariadb": "^2.5.2",
     "mime-types": "^2.1.28",
     "minio": "^7.0.18",
-    "nats": "^1.4.12",
-    "pg": "^8.5.1",
-    "pg-cursor": "^2.5.2",
-    "pg-hstore": "^2.3.3",
     "redis": "^3.0.2",
     "rxjs": "^6.6.3",
     "sequelize": "^6.5.0",
-    "sinon": "^9.2.3",
-    "sqlite3": "^5.0.1"
+    "sinon": "^9.2.3"
   }
 }
