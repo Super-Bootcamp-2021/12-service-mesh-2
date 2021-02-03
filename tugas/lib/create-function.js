@@ -2,7 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('mime-types');
 const Busboy = require('busboy');
+const redis = require('redis');
+const { promisify } = require('util');
 const { Writable } = require('stream');
+const client = redis.createClient();
+
+const getAsync = promisify(client.get).bind(client);
+const setAsync = promisify(client.set).bind(client);
 
 function randomFileName(mimetype) {
   return (
@@ -40,7 +46,7 @@ function uploadFiles(req, res) {
           file.pipe(store);
         }
         break;
-      case 'task':
+      case 'attachment':
         {
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
@@ -62,8 +68,32 @@ function uploadFiles(req, res) {
     }
   });
 
-  busboy.on('field', (fieldname, val) => {
-    console.log(val);
+  busboy.on('field', async (fieldname, val) => {
+    // switch (fieldname) {
+    //   case 'task':
+    try {
+      await setAsync('worker', JSON.stringify({
+        nama: val,
+      }));
+      let value = await getAsync('worker');
+      console.log(value);
+      client.end(true);
+    } catch (err) {
+      console.error(err);
+      client.end(true);
+    }
+    //     break;
+    //   case 'nama':
+    //     try {
+    //       await setAsync('name', val);
+    //       let value = await getAsync('name');
+    //       console.log(value);
+    //       client.end(true);
+    //     } catch (err) {
+    //       console.error(err);
+    //       client.end(true);
+    //     }
+    // }
   });
   busboy.on('finish', () => {
     res.end();
