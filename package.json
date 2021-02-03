@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "start": "node ."
+    "start": "node .",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
