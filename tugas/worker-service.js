@@ -55,6 +55,31 @@ function saveWorker(req, res) {
     req.pipe(busboy)
 }
 
+busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+    switch (fieldname) {
+      case 'photo':
+        {
+          const destname = randomFileName(mimetype);
+          const store = fs.createWriteStream(
+            path.resolve(__dirname, `./photo/${destname}`)
+          );
+          file.on('error', abort);
+          store.on('error', abort);
+          file.pipe(store);
+          data["photo"] = "localhost:9999/photo/" + destname;
+        }
+        break;
+      default: {
+        const noop = new Writable({
+          write(chunk, encding, callback) {
+            setImmediate(callback);
+          },
+        });
+        file.pipe(noop);
+      }
+    }
+  });
+
 async function getWorker(req, res) {
     const client = createClient();
     const redisGet = getAsync(client);
@@ -77,6 +102,5 @@ async function getWorker(req, res) {
     req.on('aborted', abort);
 
 }
-
 
 module.exports = {saveWorker,getWorker};

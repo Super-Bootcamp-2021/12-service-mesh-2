@@ -45,6 +45,7 @@ function uploadService(req, res) {
           store.on('error', abort);
           file.pipe(store);
           data["photo"] = "localhost:9999/photo/" + destname;
+
         }
         break;
       case 'attachment':
@@ -56,9 +57,7 @@ function uploadService(req, res) {
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
-          file.pipe(store);
           data["photo"] = "localhost:9999/attachment/" + destname;
-
         }
         break;
       default: {
@@ -111,4 +110,3 @@ module.exports = {
   uploadService,
   readService,
 };
-
