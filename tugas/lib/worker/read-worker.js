@@ -12,7 +12,7 @@ function readWorkers(req, res) {
     res.write('request tidak sesuai');
     res.end();
   }
-  const file = path.resolve(__dirname, `./db/profil/${filename}`);
+  const file = path.resolve(__dirname, `../../db/profil/${filename}`);
   const exist = fs.existsSync(file);
   if (!exist) {
     res.statusCode = 404;

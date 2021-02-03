@@ -12,19 +12,19 @@ function connect() {
 }
 
 async function save(db, data) {
-  client.rpush(db, data);
+  await client.hmset(db,data.email.toString(), JSON.stringify(data));
 }
 
 async function del(db, data) {
-  client.del(db, JSON.stringify(data));
+  await client.del();
 }
 
 async function read(db) {
-  client.get(db);
+  await client.get(db);
 }
 
 async function update(db, data) {
-  client.keys(db, JSON.stringify(data));
+  await client.keys(db, JSON.stringify(data));
 }
 
 module.exports = {

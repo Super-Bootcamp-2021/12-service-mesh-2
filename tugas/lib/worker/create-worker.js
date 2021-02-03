@@ -80,14 +80,14 @@ function addWorkers(req, res) {
     }
   });
   busboy.on('finish', async () => {
-    const input = JSON.stringify({
+    const input = {
       profil: profil,
       nama: nama,
       alamat: alamat,
       email: email,
       telp: telp,
       biografi: biografi,
-    });
+    };
     await save(CONFIG.WORKER, input);
     res.end();
   });
