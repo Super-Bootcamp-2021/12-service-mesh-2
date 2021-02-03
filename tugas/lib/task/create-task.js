@@ -37,7 +37,7 @@ function addTask(req, res) {
       job: job,
       worker: worker
     });
-    await save(CONFIG.TASK, input);
+    await save(CONFIG.TASK, JSON.stringify({ task: [input] }));
     res.end();
   });
 
