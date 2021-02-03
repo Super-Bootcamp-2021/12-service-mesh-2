@@ -5,17 +5,7 @@ const Busboy = require('busboy');
 const url = require('url');
 const { setValueToDb, setWorker, getValue, getValueByName, delValueWorker } = require('../kv/redis');
 const { Writable } = require('stream');
-
-
-function randomFileName(mimetype) {
-  return (
-    new Date().getTime() +
-    '-' +
-    Math.round(Math.random() * 1000) +
-    '.' +
-    mime.extension(mimetype)
-  );
-}
+const { upload } = require('./storege');
 
 function storeProfileService(req, res) {
   let worker = {};
@@ -29,28 +19,7 @@ function storeProfileService(req, res) {
     }
   }
   busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-    switch (fieldname) {
-      case 'photo':
-        {
-          worker[fieldname] = filename;
-          const destname = randomFileName(mimetype);
-          const store = fs.createWriteStream(
-            path.resolve(__dirname, `./file-storage/${destname}`)
-          );
-          file.on('error', abort);
-          store.on('error', abort);
-          file.pipe(store);
-        }
-        break;
-      default: {
-        const noop = new Writable({
-          write(chunk, encding, callback) {
-            setImmediate(callback);
-          },
-        });
-        file.pipe(noop);
-      }
-    }
+    upload(worker, fieldname, file, mimetype, abort)
   });
   busboy.on('field', (fieldname, val) => {
     worker[fieldname] = val;
