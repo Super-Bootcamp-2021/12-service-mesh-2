@@ -1,9 +1,13 @@
 const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
-const { uploadService, readService } = require('./storage-service');
+const {
+  storeProfileService,
+  getValueService,
+  delValueService,
+} = require('./working-service');
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   let method = req.method;
   // route service
   let message = 'tidak ditemukan data';
@@ -17,15 +21,23 @@ const server = createServer((req, res) => {
   switch (true) {
     case uri.pathname === '/store':
       if (method === 'POST') {
-        uploadService(req, res);
+        storeProfileService(req, res);
       } else {
         message = 'Method tidak tersedia';
         respond();
       }
       break;
-    case /^\/read\/\w+/.test(uri.pathname):
+    case /^\/find\/\w+/.test(uri.pathname):
       if (method === 'GET') {
-        readService(req, res);
+        getValueService(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case /^\/del\/\w+/.test(uri.pathname):
+      if (method === 'GET') {
+        delValueService(req, res);
       } else {
         message = 'Method tidak tersedia';
         respond();

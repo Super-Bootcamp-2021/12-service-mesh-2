@@ -4,25 +4,16 @@ const client = redis.createClient();
 
 const getAsync = promisify(client.get).bind(client);
 const setAsync = promisify(client.set).bind(client);
-// const delAsync = promisify(client.del).bind(client);
+const delAsync = promisify(client.del).bind(client);
 
 client.on('error', (error) => {
   console.error(error);
   client.end(true);
 });
 
-async function setValue(fieldname, value) {
+async function setValue(profile) {
   try {
-    let store = await getAsync(fieldname);
-    let parsing = '';
-    let newValue = '';
-    if (store == null) {
-      newValue = `${value}`;
-    } else {
-      parsing = JSON.parse(store);
-      newValue = `${parsing},${value}`;
-    }
-    await setAsync(fieldname, JSON.stringify(newValue));
+    await setAsync(profile.name, JSON.stringify(profile));
   } catch (err) {
     console.error(err);
   }
@@ -30,7 +21,16 @@ async function setValue(fieldname, value) {
 async function getValue(fieldname) {
   try {
     let store = await getAsync(fieldname);
-    const result = JSON.parse(store).split(',');
+    const result = JSON.parse(store);
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
+async function delValue(fieldname) {
+  try {
+    await delAsync(fieldname);
+    const result = 'Berhasil di hapus';
     return result;
   } catch (err) {
     console.error(err);
@@ -40,4 +40,5 @@ async function getValue(fieldname) {
 module.exports = {
   getValue,
   setValue,
+  delValue,
 };
