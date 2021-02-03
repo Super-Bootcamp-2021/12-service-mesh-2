@@ -3,9 +3,9 @@ const path = require('path');
 const mime = require('mime-types');
 const Busboy = require('busboy');
 const url = require('url');
-const { setValue, getValue, delValue } = require('../kv/redis');
-
+const { setValueToDb, setWorker, getValue, getValueByName, delValueWorker } = require('../kv/redis');
 const { Writable } = require('stream');
+
 
 function randomFileName(mimetype) {
   return (
@@ -18,8 +18,8 @@ function randomFileName(mimetype) {
 }
 
 function storeProfileService(req, res) {
+  let worker = {};
   const busboy = new Busboy({ headers: req.headers });
-  let newObj = {};
 
   function abort() {
     req.unpipe(busboy);
@@ -32,7 +32,7 @@ function storeProfileService(req, res) {
     switch (fieldname) {
       case 'photo':
         {
-          newObj[fieldname] = filename;
+          worker[fieldname] = filename;
           const destname = randomFileName(mimetype);
           const store = fs.createWriteStream(
             path.resolve(__dirname, `./file-storage/${destname}`)
@@ -53,10 +53,11 @@ function storeProfileService(req, res) {
     }
   });
   busboy.on('field', (fieldname, val) => {
-    newObj[fieldname] = val;
+    worker[fieldname] = val;
   });
   busboy.on('finish', async () => {
-    await setValue(newObj);
+    await setWorker(worker);
+    await setValueToDb();
     res.write('data berhasil di tambahkan');
     res.end();
   });
@@ -67,7 +68,7 @@ function storeProfileService(req, res) {
   req.pipe(busboy);
 }
 
-async function getValueService(req, res) {
+async function getValueByNameService(req, res) {
   const uri = url.parse(req.url, true);
   const filename = uri.pathname.replace('/find/', '');
   if (!filename) {
@@ -75,9 +76,18 @@ async function getValueService(req, res) {
     res.write('request tidak sesuai');
     res.end();
   }
-  const value = await getValue(filename);
+  const value = await getValueByName(filename);
   res.setHeader('Content-Type', 'application/json');
   const data = JSON.stringify(value);
+  res.statusCode = 200;
+  res.write(data);
+  res.end();
+}
+
+async function getValueService(req, res) {
+  const value = await getValue();
+  res.setHeader('Content-Type', 'application/json');
+  const data = JSON.stringify(value.worker);
   res.statusCode = 200;
   res.write(data);
   res.end();
@@ -90,7 +100,8 @@ async function delValueService(req, res) {
     res.write('request tidak sesuai');
     res.end();
   }
-  const value = await delValue(filename);
+  const value = await delValueWorker(filename);
+  await setValueToDb();
   if (!value) {
     res.statusCode = 404;
     res.write('data tidak ditemukan');
@@ -106,4 +117,5 @@ module.exports = {
   storeProfileService,
   getValueService,
   delValueService,
+  getValueByNameService,
 };
