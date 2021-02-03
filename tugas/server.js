@@ -21,7 +21,7 @@ const server = createServer((req, res) => {
     }
 
     switch (true) {
-        case uri.pathname === '/worker':
+        case /^\/worker(\/\w+)?/.test(uri.pathname):
             if (method === 'GET') {
                 getWorker(req,res);
             } else if (method === 'POST') {
