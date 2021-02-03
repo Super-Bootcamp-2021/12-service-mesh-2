@@ -5,6 +5,7 @@ const {
   storeProfileService,
   getValueService,
   delValueService,
+  getValueByNameService,
 } = require('./working-service');
 
 const server = createServer(async (req, res) => {
@@ -27,9 +28,17 @@ const server = createServer(async (req, res) => {
         respond();
       }
       break;
+    case uri.pathname === '/getallworker':
+      if (method === 'POST') {
+        getValueService(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
     case /^\/find\/\w+/.test(uri.pathname):
       if (method === 'GET') {
-        getValueService(req, res);
+        getValueByNameService(req, res);
       } else {
         message = 'Method tidak tersedia';
         respond();
