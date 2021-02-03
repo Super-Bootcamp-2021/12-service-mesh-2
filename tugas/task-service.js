@@ -29,6 +29,31 @@ class TaskService {
 
         })
 
+        busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+            switch (fieldname) {
+              case 'attachment':
+                {
+                  const destname = randomFileName(mimetype);
+                  const store = fs.createWriteStream(
+                    path.resolve(__dirname, `./storage/attachment/${destname}`)
+                  );
+                  file.on('error', abort);
+                  store.on('error', abort);
+                  file.pipe(store);
+                  data["attachment"] = "localhost:9999/attachment/" + destname;
+                }
+                break;
+              default: {
+                const noop = new Writable({
+                  write(chunk, encding, callback) {
+                    setImmediate(callback);
+                  },
+                });
+                file.pipe(noop);
+              }
+            }
+          });
+
         req.on('aborted', abort)
         busboy.on('error', abort)
 
@@ -47,6 +72,27 @@ class TaskService {
         res.end();
         req.on('aborted', abort);
     }
+
+    static attachmentService(req, res) {
+        const uri = url.parse(req.url, true);
+        const filename = uri.pathname.replace('/attachment/', '');
+        if (!filename) {
+          res.statusCode = 400;
+          res.write('request tidak sesuai');
+          res.end();
+        }
+        const file = path.resolve(__dirname, `./storage/attachment/${filename}`);
+        const exist = fs.existsSync(file);
+        if (!exist) {
+          res.statusCode = 404;
+          res.write('file tidak ditemukan');
+          res.end();
+        }
+        const fileRead = fs.createReadStream(file);
+        res.setHeader('Content-Type', mime.lookup(filename));
+        res.statusCode = 200;
+        fileRead.pipe(res);
+      }
 }
 
 function abort() {
@@ -69,7 +115,19 @@ async function saveData(data, res) {
     } catch (err) {
         console.error(err)
     }
+
 }
+
+function randomFileName(mimetype) {
+    return (
+      new Date().getTime() +
+      '-' +
+      Math.round(Math.random() * 1000) +
+      '.' +
+      mime.extension(mimetype)
+    );
+  }
+
 
 
 module.exports = TaskService;

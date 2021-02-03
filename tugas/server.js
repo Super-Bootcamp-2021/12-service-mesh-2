@@ -2,7 +2,7 @@ const { createServer } = require('http')
 const url = require('url')
 const { stdout } = require('process')
 
-const {getTask, saveTask} = require('./task-service')
+const {getTask, saveTask, attachmentService} = require('./task-service')
 const {saveWorker,getWorker,deleteWorker,photoService} = require('./worker-service');
 
 //Worker service module here
@@ -58,7 +58,7 @@ const server = createServer((req, res) => {
             break
         case /^\/attachment\/\w+/.test(uri.pathname):
             if (method === 'GET') {
-                // get attachment data
+                attachmentService(req,res)
             } else {
                 message = 'Method tidak tersedia'
                 respond()
