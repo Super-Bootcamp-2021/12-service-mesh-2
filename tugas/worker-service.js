@@ -6,6 +6,16 @@ const url = require('url')
 
 const { createClient, getAsync, setAsync } = require('./redist-handler')
 
+function randomFileName(mimetype) {
+    return (
+      new Date().getTime() +
+      '-' +
+      Math.round(Math.random() * 1000) +
+      '.' +
+      mime.extension(mimetype)
+    );
+  }
+
 function saveWorker(req, res) {
     const busboy = new Busboy({ headers: req.headers })
     const client = createClient()
@@ -61,6 +71,31 @@ function saveWorker(req, res) {
         data[fieldname] = val
     })
 
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        switch (fieldname) {
+          case 'photo':
+            {
+              const destname = randomFileName(mimetype);
+              const store = fs.createWriteStream(
+                path.resolve(__dirname, `./storage/photo/${destname}`)
+              );
+              file.on('error', abort);
+              store.on('error', abort);
+              file.pipe(store);
+              data["photo"] = "localhost:9999/photo/" + destname;
+            }
+            break;
+          default: {
+            const noop = new Writable({
+              write(chunk, encding, callback) {
+                setImmediate(callback);
+              },
+            });
+            file.pipe(noop);
+          }
+        }
+      });
+    
     busboy.on('finish', () => {
         client.on('error', (error) => {
             console.error(error)
@@ -164,4 +199,25 @@ async function deleteWorker(req, res) {
     })
 }
 
-module.exports = { saveWorker, getWorker, deleteWorker }
+function photoService(req, res) {
+    const uri = url.parse(req.url, true);
+    const filename = uri.pathname.replace('/photo/', '');
+    if (!filename) {
+      res.statusCode = 400;
+      res.write('request tidak sesuai');
+      res.end();
+    }
+    const file = path.resolve(__dirname, `./storage/photo/${filename}`);
+    const exist = fs.existsSync(file);
+    if (!exist) {
+      res.statusCode = 404;
+      res.write('file tidak ditemukan');
+      res.end();
+    }
+    const fileRead = fs.createReadStream(file);
+    res.setHeader('Content-Type', mime.lookup(filename));
+    res.statusCode = 200;
+    fileRead.pipe(res);
+  }
+
+module.exports = { saveWorker, getWorker, deleteWorker,photoService}
