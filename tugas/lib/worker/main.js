@@ -1,6 +1,4 @@
-const {addWorkers,uploadFoto} = require('./create-worker')
-const {readWorkers} = require('./read-worker')
-require('./delete-worker')
-
-
-module.exports = {addWorkers, readWorkers,uploadFoto}
+const { addWorkers } = require('./create-worker');
+const { deleteWorkers } = require('./delete-worker');
+const {readWorkers } = require('./read-worker')
+module.exports = { addWorkers, deleteWorkers, readWorkers };

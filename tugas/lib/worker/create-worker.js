@@ -3,7 +3,7 @@ const path = require('path');
 const mime = require('mime-types');
 const Busboy = require('busboy');
 const { Writable } = require('stream');
-const { save, read } = require('../../db/redis/redis');
+const { save } = require('../../db/redis/redis');
 const { CONFIG } = require('../../config');
 
 function randomFileName(mimetype) {
@@ -18,13 +18,12 @@ function randomFileName(mimetype) {
 
 function addWorkers(req, res) {
   const busboy = new Busboy({ headers: req.headers });
-
-  let profil = '';
   let nama = '';
   let alamat = '';
   let email = '';
   let telp = '';
   let biografi = '';
+  let photo = ""
 
   function abort() {
     req.unpipe(busboy);
@@ -36,18 +35,19 @@ function addWorkers(req, res) {
 
   busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
     switch (fieldname) {
-      case 'profil':
+      case 'photo':
         {
           const destname = randomFileName(mimetype);
-          profil = destname;
           const store = fs.createWriteStream(
-            path.resolve(__dirname, `../../db/profil/${destname}`)
+            path.resolve(__dirname, `../../db/photos/${destname}`)
           );
-          profile = destname;
+          photo = destname;
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
+          
         }
+        
         break;
       default: {
         const noop = new Writable({
@@ -81,12 +81,12 @@ function addWorkers(req, res) {
   });
   busboy.on('finish', async () => {
     const input = {
-      profil: profil,
       nama: nama,
-      alamat: alamat,
       email: email,
+      alamat: alamat,    
       telp: telp,
       biografi: biografi,
+      photo : photo,
     };
     await save(CONFIG.WORKER, input);
     res.end();

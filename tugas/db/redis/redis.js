@@ -1,5 +1,8 @@
 const redis = require('redis');
 const client = redis.createClient();
+const { promisify } = require('util');
+
+const hvalsAsync = promisify(client.hvals).bind(client);
 
 function connect() {
   return new Promise((resolve, reject) => {
@@ -12,19 +15,21 @@ function connect() {
 }
 
 async function save(db, data) {
-  await client.hmset(db,data.email.toString(), JSON.stringify(data));
+  await client.hmset(db, (data.job) ? data.job : data.email , JSON.stringify(data));
 }
 
-async function del(db, data) {
-  await client.del();
+async function del(db) {
+  await client.del(db);
 }
 
 async function read(db) {
-  await client.get(db);
+  let value = await hvalsAsync(db);
+  return value
+
 }
 
 async function update(db, data) {
-  await client.keys(db, JSON.stringify(data));
+  await client.hset(db, (data.job) ? data.job : data.email, dataJSON.stringify(data));
 }
 
 module.exports = {

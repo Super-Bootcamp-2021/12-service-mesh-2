@@ -6,6 +6,16 @@ const { Writable } = require('stream');
 const { save } = require('../../db/redis/redis');
 const { CONFIG } = require('../../config');
 
+function randomFileName(mimetype) {
+  return (
+    new Date().getTime() +
+    '-' +
+    Math.round(Math.random() * 1000) +
+    '.' +
+    mime.extension(mimetype)
+  );
+}
+
 function addTask(req, res) {
   const busboy = new Busboy({ headers: req.headers });
 
@@ -28,16 +38,22 @@ function addTask(req, res) {
       case 'worker':
         worker = val;
         break;
+      case 'worker':
+        status = (val === "") ? 'unfinished' : val;
+        break;
+
       default:
         break;
     }
   });
   busboy.on('finish', async () => {
-    const input = JSON.stringify({
+    const input = {
       job: job,
       worker: worker,
-    });
+      status : status,
+    };
     await save(CONFIG.TASK, input);
+    console.log(input);
     res.end();
   });
 
@@ -94,5 +110,5 @@ function uploadAttachment(req, res) {
 
 module.exports = {
   addTask,
-  uploadAttachment
+  uploadAttachment,
 };
