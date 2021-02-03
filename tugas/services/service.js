@@ -5,6 +5,7 @@ const {
   addWorkers,
   readWorkers,
   deleteWorkers,
+  uploadFoto,
 } = require('../lib/worker/main');
 const { addTask, uploadAttachment } = require('../lib/task/main');
 

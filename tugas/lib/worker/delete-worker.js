@@ -3,7 +3,7 @@ const { del } = require('../../db/redis/redis');
 
 function deleteWorkers(res) {
   del(CONFIG.WORKER);
-  res.end()
+  res.end();
 }
 
 module.exports = { deleteWorkers };
