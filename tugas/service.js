@@ -1,7 +1,11 @@
 const { createServer } = require('http');
 const url = require('url');
 const { stdout } = require('process');
-const { workerStore, workersRead } = require('./workers/workers-service');
+const {
+  workerStore,
+  workersRead,
+  workerDelete,
+} = require('./workers/workers-service');
 const { taskStore } = require('./tasks/tasks-service');
 
 const server = createServer((req, res) => {
@@ -35,6 +39,14 @@ const server = createServer((req, res) => {
     case uri.pathname === '/workersread':
       if (method === 'GET') {
         workersRead(req, res);
+      } else {
+        message = 'Method tidak tersedia';
+        respond();
+      }
+      break;
+    case /^\/workerdelete\/\w+/.test(uri.pathname):
+      if (method === 'GET') {
+        workerDelete(req, res);
       } else {
         message = 'Method tidak tersedia';
         respond();

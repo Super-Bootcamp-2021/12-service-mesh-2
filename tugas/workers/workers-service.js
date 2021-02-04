@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const Busboy = require('busboy');
+const url = require('url');
 const { Writable } = require('stream');
 const redis = require('redis');
 const { promisify } = require('util');
@@ -129,7 +130,65 @@ function workersRead(req, res) {
   });
 }
 
+function workerDelete(req, res) {
+  const uri = url.parse(req.url, true);
+  const workername = uri.pathname.replace('/workerdelete/', '');
+  if (!workername) {
+    res.statusCode = 400;
+    res.write('request tidak sesuai');
+    res.end();
+  }
+
+  const client = redis.createClient();
+  const getAsync = promisify(client.get).bind(client);
+  const setAsync = promisify(client.set).bind(client);
+
+  client.on('error', (error) => {
+    res.statusCode = 400;
+    res.write = 'Bad request';
+    res.end();
+    console.error(error);
+    client.end(true);
+  });
+
+  client.on('connect', async () => {
+    try {
+      const val = await getAsync('workers');
+      if (!val) {
+        res.statusCode = 404;
+        res.write('worker not found');
+        res.end();
+      } else {
+        let arrWorker = JSON.parse(val).workers;
+        let idxWorker = -1;
+        for (let i = 0; i < arrWorker.length; i++) {
+          if (arrWorker[i].name === workername) {
+            idxWorker = i;
+            break;
+          }
+        }
+        if (idxWorker >= arrWorker.length) {
+          res.statusCode = 404;
+          res.write('worker not found');
+          res.end();
+        } else {
+          arrWorker.splice(idxWorker, 1);
+          const worker = { workers: arrWorker };
+          await setAsync('workers', JSON.stringify(worker));
+          res.statusCode = 200;
+          res.write(JSON.stringify(worker));
+          res.end();
+        }
+      }
+      client.end(true);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+}
+
 module.exports = {
   workersStore,
   workersRead,
+  workerDelete,
 };
