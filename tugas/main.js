@@ -1,5 +1,5 @@
 const { startRedis } = require('./redis');
-const { serve } = require('./server');
+const { serve } = require('./lib/server');
 
 async function main() {
   await startRedis('connect');

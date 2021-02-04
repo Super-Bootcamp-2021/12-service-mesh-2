@@ -16,8 +16,14 @@ function randomFileName(mimetype) {
   );
 }
 
-function uploadService(req, res) {
+async function postService(req, res) {
   const busboy = new Busboy({ headers: req.headers });
+  let obj = {};
+  let data = JSON.parse(await getData('data'));
+
+  if (!data) {
+    data = { data: [] };
+  }
 
   function abort() {
     req.unpipe(busboy);
@@ -40,17 +46,6 @@ function uploadService(req, res) {
           file.pipe(store);
         }
         break;
-      case 'attachment':
-        {
-          const destname = randomFileName(mimetype);
-          const store = fs.createWriteStream(
-            path.resolve(__dirname, `./file-storage/${destname}`)
-          );
-          file.on('error', abort);
-          store.on('error', abort);
-          file.pipe(store);
-        }
-        break;
       default: {
         const noop = new Writable({
           write(chunk, encding, callback) {
@@ -63,12 +58,12 @@ function uploadService(req, res) {
   });
 
   busboy.on('field', async (fieldname, val) => {
-    console.log(val);
-    await setData('data', val);
+    obj[`${fieldname}`] = val;
   });
   busboy.on('finish', async () => {
-    const datanya = await getData('data');
-    console.log('datanya : ', datanya);
+    data.data.push(obj);
+    await setData('data', JSON.stringify(data));
+    console.log('data berhasil disimpan');
     res.end();
   });
 
@@ -78,28 +73,37 @@ function uploadService(req, res) {
   req.pipe(busboy);
 }
 
-function readService(req, res) {
+async function readWorkerService(req, res) {
+  const data = await getData('data');
+  res.setHeader('Content-Type', 'application/json');
+  res.write(data);
+  res.statusCode = 200;
+  res.end();
+}
+
+async function deleteService(req, res) {
   const uri = url.parse(req.url, true);
-  const filename = uri.pathname.replace('/read/', '');
-  if (!filename) {
+  const data = JSON.parse(await getData('data'));
+  const name = uri.pathname.replace('/pekerja/delete/', '');
+  if (!name) {
     res.statusCode = 400;
     res.write('request tidak sesuai');
     res.end();
   }
-  const file = path.resolve(__dirname, `./file-storage/${filename}`);
-  const exist = fs.existsSync(file);
-  if (!exist) {
-    res.statusCode = 404;
-    res.write('file tidak ditemukan');
-    res.end();
+
+  for (let i = 0; i < data.data.length; i++) {
+    if (data.data[i].nama === name) {
+      data.data.splice(i, 1);
+    }
   }
-  const fileRead = fs.createReadStream(file);
-  res.setHeader('Content-Type', mime.lookup(filename));
+
+  await setData('data', JSON.stringify(data));
   res.statusCode = 200;
-  fileRead.pipe(res);
+  res.end();
 }
 
 module.exports = {
-  uploadService,
-  readService,
+  postService,
+  readWorkerService,
+  deleteService,
 };
