@@ -46,7 +46,7 @@ async function read(db) {
  * @param {string} db database name
  * @returns {Promise<void>}
  */
-async function drop(db) {
+function drop(db) {
   const delAsync = promisify(client.del).bind(client);
   return delAsync(db);
 }
