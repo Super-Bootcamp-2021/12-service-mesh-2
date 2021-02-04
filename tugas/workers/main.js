@@ -14,11 +14,6 @@ const server = createServer( async (req, res) => {
 
     let message = "404 not found";
     let statusCode = 200;
-    const respond = () => {
-        res.statusCode = statusCode;
-        res.write(message);
-        res.end();
-    };
 
     const uri = url.parse(req.url, true);
 
@@ -32,12 +27,12 @@ const server = createServer( async (req, res) => {
                     telepon: uri.query["telepon"],
                     bigorafi: uri.query["biografi"],
                 }
-                message = await saveWorkers(req, res, uri.query["key"], data);
+                message = await saveWorkers(uri.query["key"], JSON.stringify(data));
                 //res.write(message);
-                
+                 
             } else {
                 message = 'Method tidak tersedia';   
-                respond();             
+                // respond();             
             }
             break;   
 
@@ -48,7 +43,7 @@ const server = createServer( async (req, res) => {
                 
             } else {
                 message = 'Method tidak tersedia';   
-                respond();             
+                // respond();             
             }
             break;
         
@@ -59,13 +54,13 @@ const server = createServer( async (req, res) => {
                 
             } else {
                 message = 'Method tidak tersedia';   
-                respond();             
+                // respond();             
             }
             break;
     
         default:
             statusCode = 404;        
-            respond();
+            //respond();
             break;
     }
     //res.end();
