@@ -29,7 +29,7 @@ client.on('connect', async (error) => {
   }
 });
 
-function setWorker(obj) {
+function setWorker(obj){
   db.worker[obj.name] = {
     profile: obj.profile,
     email: obj.email,
@@ -37,6 +37,14 @@ function setWorker(obj) {
     telp: obj.telp,
     biografi: obj.biografi,
     filename: obj.photo,
+  };
+}
+
+
+function setTask(obj){
+  db.task[obj.name] = {
+    pekerja: obj.pekerja,
+    status: obj.status,
   };
 }
 
@@ -71,6 +79,27 @@ async function getValueByName(nama) {
     console.error(err);
   }
 }
+
+async function upTaskByName(nama) {
+  try {
+    let store = await getAsync('db');
+    const result = JSON.parse(store);
+    result.task[nama].status = 1;
+    return result;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function getTaskByName(nama) {
+  try {
+    let store = await getAsync('db');
+    const result = JSON.parse(store);
+    return result.task[nama];
+  } catch (err) {
+    console.error(err);
+  }
+}
 async function delValueWorker(value) {
   try {
     delete db.worker[value];
@@ -84,7 +113,10 @@ async function delValueWorker(value) {
 module.exports = {
   getValue,
   setWorker,
+  setTask,
   setValueToDb,
+  upTaskByName,
   delValueWorker,
   getValueByName,
+  getTaskByName,
 };
