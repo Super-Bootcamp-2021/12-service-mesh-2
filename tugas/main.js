@@ -1,4 +1,4 @@
-const redis = require('./lib/redis');
+const kv = require('./lib/kv');
 const server = require('./worker/server');
 
 /**
@@ -7,11 +7,11 @@ const server = require('./worker/server');
  */
 async function main() {
   try {
-    console.log('connect to redis service...');
-    await redis.connect();
-    console.log('redis connected');
+    console.log('connect to KV service...');
+    await kv.connect();
+    console.log('KV connected');
   } catch (err) {
-    console.error('redis connection failed');
+    console.error('KV connection failed');
     return;
   }
 

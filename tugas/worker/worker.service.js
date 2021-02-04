@@ -46,20 +46,19 @@ function registerSvc(req, res) {
         } catch (err) {
           abort();
         }
-        try {
-          const worker = await register(data);
-          res.setHeader('content-type', 'application/json');
-          res.write(JSON.stringify(worker));
-        } catch (err) {
-          if (err === ERROR_REGISTER_DATA_INVALID) {
-            res.statusCode = 401;
-          } else {
-            res.statusCode = 500;
-          }
-          res.write(err);
-        }
         if (finished) {
-          res.end();
+          try {
+            const worker = await register(data);
+            res.setHeader('content-type', 'application/json');
+            res.write(JSON.stringify(worker));
+          } catch (err) {
+            if (err === ERROR_REGISTER_DATA_INVALID) {
+              res.statusCode = 401;
+            } else {
+              res.statusCode = 500;
+            }
+            res.write(err);
+          }
         }
         break;
       default: {

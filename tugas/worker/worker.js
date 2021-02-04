@@ -1,4 +1,4 @@
-const { read, save } = require('../lib/redis');
+const { read, save } = require('../lib/kv');
 
 const ERROR_REGISTER_DATA_INVALID = 'data registrasi pekerja tidak lengkap';
 const ERROR_WORKER_NOT_FOUND = 'pekerja tidak ditemukan';
@@ -11,6 +11,7 @@ const ERROR_WORKER_NOT_FOUND = 'pekerja tidak ditemukan';
  * @property {string} bio
  * @property {string} address
  * @property {string} photo
+ * @property {[string]} id
  */
 
 /**
