@@ -1,1 +1,1 @@
-require('./materi/db/kv/redis');
+require('./tugas/service');
