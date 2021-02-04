@@ -8,6 +8,7 @@ const { randomFileName } = require('../utils');
 
 function workersStore(req, res) {
   // Menyimpan data worker dari http request ke database redis
+  let workerData = {};
   const busboy = new Busboy({
     headers: req.headers,
   });
@@ -31,6 +32,7 @@ function workersStore(req, res) {
           file.on('error', abort);
           store.on('error', abort);
           file.pipe(store);
+          workerData.photo = filename;
         }
         break;
       default: {
@@ -45,10 +47,46 @@ function workersStore(req, res) {
   });
 
   busboy.on('field', (fieldname, val) => {
-    console.log(JSON.stringify(val));
+    workerData[fieldname] = val;
   });
+
   busboy.on('finish', () => {
-    res.end();
+    //redis code
+    const client = redis.createClient();
+    const getAsync = promisify(client.get).bind(client);
+    const setAsync = promisify(client.set).bind(client);
+
+    client.on('error', (error) => {
+      res.statusCode = 400;
+      res.write = 'Bad request';
+      res.end();
+      console.error(error);
+      client.end(true);
+    });
+
+    client.on('connect', async () => {
+      try {
+        const val = await getAsync('workers');
+        let worker = {};
+        if (!val) {
+          let arrWorker = [];
+          arrWorker.push(workerData);
+          worker.workers = arrWorker;
+          await setAsync('workers', JSON.stringify(worker));
+        } else {
+          let arrWorker = JSON.parse(val).workers;
+          arrWorker.push(workerData);
+          worker.workers = arrWorker;
+          await setAsync('workers', JSON.stringify(worker));
+        }
+        res.statusCode = 200;
+        res.write(JSON.stringify(worker));
+        res.end();
+        client.end(true);
+      } catch (error) {
+        console.log(error);
+      }
+    });
   });
 
   req.on('aborted', abort);
@@ -62,8 +100,8 @@ function workersRead(req, res) {
   const client = redis.createClient();
   const getAsync = promisify(client.get).bind(client);
 
-  let message = 'Data tidak ditemukan';
-  let statusCode = 404;
+  let message = 'Bad request';
+  let statusCode = 400;
 
   const respond = () => {
     res.statusCode = statusCode;
