@@ -1,32 +1,15 @@
 const fs = require('fs');
 const path = require('path');
-const mime = require('mime-types');
 const Busboy = require('busboy');
-const url = require('url');
-const {
-  Writable
-} = require('stream');
+const { Writable } = require('stream');
 const redis = require('redis');
-const {
-  promisify
-} = require('util');
-
-const client = redis.createClient();
-
-function randomFileName(mimetype) {
-  return (
-    new Date().getTime() +
-    '-' +
-    Math.round(Math.random() * 1000) +
-    '.' +
-    mime.extension(mimetype)
-  );
-}
+const { promisify } = require('util');
+const { randomFileName } = require('../utils');
 
 function workersStore(req, res) {
   // Menyimpan data worker dari http request ke database redis
   const busboy = new Busboy({
-    headers: req.headers
+    headers: req.headers,
   });
 
   function abort() {
@@ -39,29 +22,29 @@ function workersStore(req, res) {
 
   busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
     switch (fieldname) {
-      case 'photo': {
-        const destname = randomFileName(mimetype);
-        const store = fs.createWriteStream(
-          path.resolve(__dirname, `./file-storage/${destname}`)
-        );
-        file.on('error', abort);
-        store.on('error', abort);
-        file.pipe(store);
+      case 'photo':
+        {
+          const destname = randomFileName(mimetype);
+          const store = fs.createWriteStream(
+            path.resolve(__dirname, `./file-storage/workers/${destname}`)
+          );
+          file.on('error', abort);
+          store.on('error', abort);
+          file.pipe(store);
+        }
+        break;
+      default: {
+        const noop = new Writable({
+          write(chunk, encding, callback) {
+            setImmediate(callback);
+          },
+        });
+        file.pipe(noop);
       }
-      break;
-    default: {
-      const noop = new Writable({
-        write(chunk, encding, callback) {
-          setImmediate(callback);
-        },
-      });
-      file.pipe(noop);
-    }
     }
   });
 
   busboy.on('field', (fieldname, val) => {
-    
     console.log(JSON.stringify(val));
   });
   busboy.on('finish', () => {
@@ -79,14 +62,14 @@ function workersRead(req, res) {
   const client = redis.createClient();
   const getAsync = promisify(client.get).bind(client);
 
-  let message = "Data tidak ditemukan";
+  let message = 'Data tidak ditemukan';
   let statusCode = 404;
 
   const respond = () => {
     res.statusCode = statusCode;
     res.write(message);
     res.end();
-  }
+  };
 
   client.on('error', (error) => {
     respond();
@@ -98,6 +81,7 @@ function workersRead(req, res) {
     try {
       const val = await getAsync('workers');
       console.log(val);
+      statusCode = 200;
       message = val;
       respond();
       client.end(true);

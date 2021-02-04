@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const mime = require('mime-types');
 const Busboy = require('busboy');
-const url = require('url');
 const { Writable } = require('stream');
 const { randomFileName } = require('../utils');
 const { rpushRedis, lrangeRedis, lsetRedis } = require('./redis');
