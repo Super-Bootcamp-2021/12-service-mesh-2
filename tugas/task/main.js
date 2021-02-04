@@ -14,17 +14,12 @@ const server = createServer( async (req, res) => {
 
     let message = "404 not found";
     let statusCode = 200;
-    const respond = () => {
-        res.statusCode = statusCode;
-        res.write(message);
-        res.end();
-    };
 
     const uri = url.parse(req.url, true);
 
     switch (true) {
         case /^\/task\/save/.test(uri.pathname):            
-            if (method === 'POST') {
+            if (method === 'GET') {
                 let data = {
                     nama: uri.query["nama"],
                     alamat: uri.query["alamat"],
@@ -32,43 +27,33 @@ const server = createServer( async (req, res) => {
                     telepon: uri.query["telepon"],
                     bigorafi: uri.query["biografi"],
                 }
-                message = await saveTask(req, res, uri.query["key"], data);
-                //res.write(message);
+                message = await saveTask(uri.query["key"], JSON.stringify(data));                
                 
             } else {
-                message = 'Method tidak tersedia';   
-                respond();             
+                message = 'Method tidak tersedia';                         
             }
             break;   
 
         case /^\/task\/get/.test(uri.pathname):
             if (method === 'GET') {               
-                message = await getTask(uri.query["key"]);
-                //res.write(message);
-                
+                message = await getTask(uri.query["key"]);                                
             } else {
-                message = 'Method tidak tersedia';   
-                respond();             
+                message = 'Method tidak tersedia';                       
             }
             break;
         
         case /^\/task\/del/.test(uri.pathname):
             if (method === 'GET') {               
-                message = await delTask(uri.query["key"]);
-                //res.write(message);
-                
+                message = await delTask(uri.query["key"]);                                
             } else {
-                message = 'Method tidak tersedia';   
-                respond();             
+                message = 'Method tidak tersedia';                       
             }
             break;
     
         default:
-            statusCode = 404;        
-            respond();
+            statusCode = 404;                    
             break;
     }
-    //res.end();
 
     res.statusCode = statusCode;
     res.write(message);
