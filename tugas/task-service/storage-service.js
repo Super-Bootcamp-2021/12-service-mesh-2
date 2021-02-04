@@ -4,7 +4,7 @@ const mime = require('mime-types');
 const Busboy = require('busboy');
 const url = require('url');
 const { Writable } = require('stream');
-const { main } = require('./redis');
+const { setData, delData, getData } = require('../redis');
 
 function randomFileName(mimetype) {
     return (
@@ -16,8 +16,14 @@ function randomFileName(mimetype) {
     );
 }
 
-function uploadService(req, res) {
+async function addTaskService(req, res) {
     const busboy = new Busboy({ headers: req.headers });
+    // let obj = {};
+    // let data = JSON.parse(await getData('data'));
+
+    // if (!data) {
+    //     data = { data: [] };
+    // }
 
     function abort() {
         req.unpipe(busboy);
@@ -29,6 +35,17 @@ function uploadService(req, res) {
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
         switch (fieldname) {
+            case 'photo':
+                {
+                    const destname = randomFileName(mimetype);
+                    const store = fs.createWriteStream(
+                        path.resolve(__dirname, `./file-storage/${destname}`)
+                    );
+                    file.on('error', abort);
+                    store.on('error', abort);
+                    file.pipe(store);
+                }
+                break;
             case 'attachment':
                 {
                     const destname = randomFileName(mimetype);
@@ -52,28 +69,101 @@ function uploadService(req, res) {
         }
     });
 
-    busboy.on('field', (fieldname, val) => {
-        console.log(fieldname, ':', val);
-        switch (fieldname) {
-            case 'pekerjaan':
-                {
-                    const state = [
-                        { pekerjaan: val }
-                    ];
-                    main(state);
-                }
-                break;
-            case 'pekerja':
-                {
-                    main('field');
-                }
-                break;
+    //const state = [];
+    let formData = new Map();
+    busboy.on('field', async(fieldname, val) => {
+        // await setData('data', val);
+        // obj = {
+        //     [`${fieldname}`]: val
+        // }
+        formData.set(fieldname, val);
+        console.log(fieldname, val);
+        formData.set(fieldname = 'status', val = 'belum selesai');
 
-            default:
-                break;
-        }
     });
-    busboy.on('finish', () => {
+
+    busboy.on('finish', async() => {
+        // state.push([`${obj}`]);
+        // state.push({
+        //     ['status']: 'belum selesai'
+        // });
+        // console.log('objnya adalah', obj)
+        // const b = await setData('data', JSON.stringify(data));
+        // console.log('data b : ', b);
+        // const a = await getData('data');
+        // console.log('datanya b: ', a);
+
+        let obje = Object.fromEntries(formData);
+        const a = await setData('data', JSON.stringify(obje));
+        console.log('set data object: ', a);
+        const a2 = await getData('data');
+        console.log('get data: ', a2);
+        res.end();
+    });
+
+    req.on('aborted', abort);
+    busboy.on('error', abort);
+
+    req.pipe(busboy);
+}
+
+async function finishService(req, res) {
+    const busboy = new Busboy({ headers: req.headers });
+
+    function abort() {
+        req.unpipe(busboy);
+        if (!req.aborted) {
+            res.statusCode = 413;
+            res.end();
+        }
+    }
+
+    let formData = new Map();
+    busboy.on('field', async(fieldname, val) => {
+        formData.set(fieldname, val);
+        formData.set(fieldname = 'status', val = 'selesai');
+        console.log(fieldname, val);
+    });
+
+    busboy.on('finish', async() => {
+        let obje = Object.fromEntries(formData);
+        const a = await setData('data', JSON.stringify(obje));
+        console.log('set data object : ', a);
+        const a2 = await getData('data');
+        console.log('get data: ', a2);
+        res.end();
+    });
+
+    req.on('aborted', abort);
+    busboy.on('error', abort);
+
+    req.pipe(busboy);
+}
+
+async function cancelService(req, res) {
+    const busboy = new Busboy({ headers: req.headers });
+
+    function abort() {
+        req.unpipe(busboy);
+        if (!req.aborted) {
+            res.statusCode = 413;
+            res.end();
+        }
+    }
+
+    let formData = new Map();
+    busboy.on('field', async(fieldname, val) => {
+        formData.set(fieldname, val);
+        formData.set(fieldname = 'status', val = 'batal');
+        console.log(fieldname, val);
+    });
+
+    busboy.on('finish', async() => {
+        let obje = Object.fromEntries(formData);
+        const a = await setData('data', JSON.stringify(obje));
+        console.log('set data object : ', a);
+        const a2 = await getData('data');
+        console.log('get data: ', a2);
         res.end();
     });
 
@@ -105,6 +195,8 @@ function readService(req, res) {
 }
 
 module.exports = {
-    uploadService,
+    addTaskService,
     readService,
+    finishService,
+    cancelService,
 };
