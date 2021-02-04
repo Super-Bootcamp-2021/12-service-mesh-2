@@ -7,14 +7,9 @@ const getData = promisify(client.get).bind(client);
 const setData = promisify(client.set).bind(client);
 const delData = promisify(client.del).bind(client);
 
-client.on('connect', () => {
-    console.log('set datanya : ', setData)
-})
-
-
 module.exports = {
-    startRedis,
-    setData,
-    getData,
-    delData,
+  startRedis,
+  setData,
+  getData,
+  delData,
 };
