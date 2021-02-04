@@ -59,6 +59,7 @@ function registerSvc(req, res) {
             }
             res.write(err);
           }
+          res.end();
         }
         break;
       default: {
@@ -94,10 +95,16 @@ function registerSvc(req, res) {
  * @param {ServerResponse} res
  */
 async function listSvc(req, res) {
-  const workers = await list();
-  res.setHeader('content-type', 'application/json');
-  res.write(JSON.stringify(workers));
-  res.end();
+  try {
+    const workers = await list();
+    res.setHeader('content-type', 'application/json');
+    res.write(JSON.stringify(workers));
+    res.end();
+  } catch (err) {
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
 }
 
 /**
