@@ -1,10 +1,10 @@
 {
   "all": true,
   "include": [
-    "lib/**/*.js"
+    "tugas/**/*.js"
   ],
   "exclude": [
     "**/*.spec.js",
-    "lib/**/main.js"
+    "tugas/**/main.js"
   ]
 }
